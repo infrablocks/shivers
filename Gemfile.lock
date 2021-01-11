@@ -100,9 +100,9 @@ DEPENDENCIES
   gem-release (~> 2.0)
   rake (~> 13.0)
   rake_circle_ci (~> 0.9)
-  rake_github (~> 0.5)
-  rake_gpg (~> 0.12)
-  rake_ssh (~> 0.4)
+  rake_github (~> 0.7)
+  rake_gpg (~> 0.14)
+  rake_ssh (~> 0.6)
   rspec (~> 3.9)
   shivers!
   simplecov (~> 0.16)
