@@ -39,7 +39,7 @@ describe Shivers::Version do
     it 'throws if version string is not a valid semantic vesion' do
       expect {
         Shivers::Version.new("wat")
-      }.to(raise_error)
+      }.to(raise_error(ArgumentError))
     end
   end
 
