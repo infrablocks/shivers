@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake_ssh', '~> 0.6'
   spec.add_development_dependency 'rake_gpg', '~> 0.14'
   spec.add_development_dependency 'rspec', '~> 3.9'
+  spec.add_development_dependency 'fakefs', '~> 0.18'
   spec.add_development_dependency 'gem-release', '~> 2.0'
   spec.add_development_dependency 'simplecov', '~> 0.16'
 end
