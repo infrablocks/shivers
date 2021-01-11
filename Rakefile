@@ -1,4 +1,5 @@
 require 'yaml'
+require 'fileutils'
 require 'rake_circle_ci'
 require 'rake_github'
 require 'rake_ssh'
@@ -13,6 +14,7 @@ RSpec::Core::RakeTask.new(:spec)
 namespace :encryption do
   namespace :passphrase do
     task :generate do
+      FileUtils.mkdir_p("config/secrets/ci/")
       File.open('config/secrets/ci/encryption.passphrase', 'w') do |f|
         f.write(SecureRandom.base64(36))
       end
