@@ -6,8 +6,8 @@ require 'shivers/version'
 Gem::Specification.new do |spec|
   spec.name = 'shivers'
   spec.version = Shivers::VERSION
-  spec.authors = ['Toby Clemson']
-  spec.email = ['tobyclemson@gmail.com']
+  spec.authors = ['InfraBlocks Maintainers']
+  spec.email = ['maintainers@infrablocks.io']
 
   spec.date = '2021-01-11'
   spec.summary = 'Semantic version numbers for CI pipelines.'
