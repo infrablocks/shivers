@@ -20,7 +20,7 @@ GEM
     diff-lcs (1.5.0)
     docile (1.4.0)
     excon (0.89.0)
-    fakefs (1.4.0)
+    fakefs (1.4.1)
     faraday (1.9.3)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
@@ -113,6 +113,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-19
+  x86_64-linux
 
 DEPENDENCIES
   bundler (~> 2.0)
