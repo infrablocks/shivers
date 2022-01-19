@@ -9,6 +9,7 @@ module Shivers
   class VersionDefinition
     PART_TYPES = {
       numeric: Parts::Numeric,
+      alphanumeric: Parts::Alphanumeric,
       static: Parts::Static
     }.freeze
 

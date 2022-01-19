@@ -1,20 +1,26 @@
+# frozen_string_literal: true
+
 module Shivers
   module Parts
-    class Static
-      def initialize(data)
-        @value = data[:value]
+    class Alphanumeric
+      def initialize(data = {})
+        @traits = data[:traits] || []
       end
 
       def matcher
-        /#{Regexp.escape(@value)}/
+        /[a-zA-Z0-9]+/
       end
 
       def convert(value)
         value
       end
 
+      def multivalued?
+        @traits.include?(:multivalued)
+      end
+
       def capturable?
-        false
+        true
       end
 
       def ==(other)
@@ -28,7 +34,7 @@ module Shivers
       end
 
       def state
-        [@value]
+        [@traits]
       end
     end
   end

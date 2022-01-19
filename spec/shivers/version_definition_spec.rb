@@ -4,79 +4,7 @@ require 'spec_helper'
 
 describe Shivers::VersionDefinition do
   context 'version formats' do
-    context 'for a simple numeric major.minor version number' do
-      let(:formatter) do
-        ->(v) { [v.major, v.separator, v.minor] }
-      end
-
-      let(:definition) do
-        Shivers::VersionDefinition.new(
-          parts: {
-            major: { type: :numeric },
-            minor: { type: :numeric },
-            separator: { type: :static, value: '.' }
-          },
-          formatter: formatter
-        )
-      end
-
-      it 'parses valid version string' do
-        expect(definition.parse('1.2'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     separator: Shivers::Parts::Static.new(value: '.')
-                   },
-                   values: { major: 1, minor: 2 },
-                   format: Shivers::Format.new(formatter)
-                 )))
-      end
-
-      it 'allows parts to be zero' do
-        expect(definition.parse('0.0'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     separator: Shivers::Parts::Static.new(value: '.')
-                   },
-                   values: { major: 0, minor: 0 },
-                   format: Shivers::Format.new(formatter)
-                 )))
-      end
-
-      it 'allows parts to be multiple digits' do
-        expect(definition.parse('12.246'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     separator: Shivers::Parts::Static.new(value: '.')
-                   },
-                   values: { major: 12, minor: 246 },
-                   format: Shivers::Format.new(formatter)
-                 )))
-      end
-
-      it 'throws if major missing' do
-        expect { definition.parse('.3') }
-          .to(raise_error(
-                ArgumentError,
-                "Version string: '.3' does not satisfy expected format."
-              ))
-      end
-
-      it 'throws if minor missing' do
-        expect { definition.parse('1.') }
-          .to(raise_error(
-                ArgumentError,
-                "Version string: '1.' does not satisfy expected format."
-              ))
-      end
-    end
-
-    context 'for a numeric major.minor.patch version number' do
+    context 'for a numeric multipart dot separated version' do
       let(:formatter) do
         ->(v) { [v.major, v.separator, v.minor, v.separator, v.patch] }
       end
@@ -93,65 +21,53 @@ describe Shivers::VersionDefinition do
         )
       end
 
+      let(:converted_parts) do
+        {
+          major: P::Numeric.new,
+          minor: P::Numeric.new,
+          patch: P::Numeric.new,
+          separator: P::Static.new(value: '.')
+        }
+      end
+
       it 'parses valid version string' do
         expect(definition.parse('1.2.3'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     separator: Shivers::Parts::Static.new(value: '.')
-                   },
-                   values: { major: 1, minor: 2, patch: 3 },
-                   format: Shivers::Format.new(formatter)
-                 )))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: { major: 1, minor: 2, patch: 3 },
+            format: F.new(formatter)
+          )))
       end
 
       it 'allows parts to be zero' do
         expect(definition.parse('0.0.0'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     separator: Shivers::Parts::Static.new(value: '.')
-                   },
-                   values: { major: 0, minor: 0, patch: 0 },
-                   format: Shivers::Format.new(formatter)
-                 )))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: { major: 0, minor: 0, patch: 0 },
+            format: F.new(formatter)
+          )))
       end
 
       it 'allows parts to be multiple digits' do
         expect(definition.parse('12.10.246'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     separator: Shivers::Parts::Static.new(value: '.')
-                   },
-                   values: { major: 12, minor: 10, patch: 246 },
-                   format: Shivers::Format.new(formatter)
-                 )))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: { major: 12, minor: 10, patch: 246 },
+            format: F.new(formatter)
+          )))
       end
 
-      it 'throws if major missing' do
+      it 'throws if required parts missing' do
         expect { definition.parse('.3.1') }
           .to(raise_error(
                 ArgumentError,
                 "Version string: '.3.1' does not satisfy expected format."
               ))
-      end
-
-      it 'throws if minor missing' do
         expect { definition.parse('1..6') }
           .to(raise_error(
                 ArgumentError,
                 "Version string: '1..6' does not satisfy expected format."
               ))
-      end
-
-      it 'throws if patch missing' do
         expect { definition.parse('1.6.') }
           .to(raise_error(
                 ArgumentError,
@@ -160,112 +76,7 @@ describe Shivers::VersionDefinition do
       end
     end
 
-    context 'for a numeric major.minor.patch version number ' \
-       'with required build number' do
-      let(:formatter) do
-        lambda { |v|
-          [v.major, v.core_separator, v.minor, v.core_separator, v.patch,
-           v.build_separator, v.build]
-        }
-      end
-
-      let(:definition) do
-        Shivers::VersionDefinition.new(
-          parts: {
-            major: { type: :numeric },
-            minor: { type: :numeric },
-            patch: { type: :numeric },
-            build: { type: :numeric },
-            core_separator: { type: :static, value: '.' },
-            build_separator: { type: :static, value: '-' }
-          },
-          formatter: formatter
-        )
-      end
-
-      it 'parses valid version string' do
-        expect(definition.parse('1.2.3-4'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     build: Shivers::Parts::Numeric.new,
-                     core_separator: Shivers::Parts::Static.new(value: '.'),
-                     build_separator: Shivers::Parts::Static.new(value: '-')
-                   },
-                   values: { major: 1, minor: 2, patch: 3, build: 4 },
-                   format: Shivers::Format.new(formatter)
-                 )))
-      end
-
-      it 'allows parts to be zero' do
-        expect(definition.parse('0.0.0-0'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     build: Shivers::Parts::Numeric.new,
-                     core_separator: Shivers::Parts::Static.new(value: '.'),
-                     build_separator: Shivers::Parts::Static.new(value: '-')
-                   },
-                   values: { major: 0, minor: 0, patch: 0, build: 0 },
-                   format: Shivers::Format.new(formatter)
-                 )))
-      end
-
-      it 'allows parts to be multiple digits' do
-        expect(definition.parse('12.10.246-1298'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     build: Shivers::Parts::Numeric.new,
-                     core_separator: Shivers::Parts::Static.new(value: '.'),
-                     build_separator: Shivers::Parts::Static.new(value: '-')
-                   },
-                   values: { major: 12, minor: 10, patch: 246, build: 1298 },
-                   format: Shivers::Format.new(formatter)
-                 )))
-      end
-
-      it 'throws if major missing' do
-        expect { definition.parse('.3.1-1') }
-          .to(raise_error(
-                ArgumentError,
-                "Version string: '.3.1-1' does not satisfy expected format."
-              ))
-      end
-
-      it 'throws if minor missing' do
-        expect { definition.parse('1..6-1') }
-          .to(raise_error(
-                ArgumentError,
-                "Version string: '1..6-1' does not satisfy expected format."
-              ))
-      end
-
-      it 'throws if patch missing' do
-        expect { definition.parse('1.6.-1') }
-          .to(raise_error(
-                ArgumentError,
-                "Version string: '1.6.-1' does not satisfy expected format."
-              ))
-      end
-
-      it 'throws if build missing' do
-        expect { definition.parse('1.6.2-') }
-          .to(raise_error(
-                ArgumentError,
-                "Version string: '1.6.2-' does not satisfy expected format."
-              ))
-      end
-    end
-
-    context 'for a numeric major.minor.patch version number ' \
-       'with optional build number' do
+    context 'for a version with optional metadata part' do
       let(:formatter) do
         lambda { |v|
           [
@@ -291,87 +102,64 @@ describe Shivers::VersionDefinition do
         )
       end
 
+      let(:converted_parts) do
+        {
+          major: P::Numeric.new,
+          minor: P::Numeric.new,
+          patch: P::Numeric.new,
+          build: P::Numeric.new,
+          core_separator: P::Static.new(value: '.'),
+          build_separator: P::Static.new(value: '-')
+        }
+      end
+
       it 'parses valid version string with optional part' do
         expect(definition.parse('1.2.3-4'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     build: Shivers::Parts::Numeric.new,
-                     core_separator: Shivers::Parts::Static.new(value: '.'),
-                     build_separator: Shivers::Parts::Static.new(value: '-')
-                   },
-                   values: { major: 1, minor: 2, patch: 3, build: 4 },
-                   format: Shivers::Format.new(formatter)
-                 )))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: { major: 1, minor: 2, patch: 3, build: 4 },
+            format: F.new(formatter)
+          )))
       end
 
       it 'parses valid version string without optional part' do
         expect(definition.parse('1.2.3'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     build: Shivers::Parts::Numeric.new,
-                     core_separator: Shivers::Parts::Static.new(value: '.'),
-                     build_separator: Shivers::Parts::Static.new(value: '-')
-                   },
-                   values: { major: 1, minor: 2, patch: 3, build: nil },
-                   format: Shivers::Format.new(formatter)
-                 )))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: { major: 1, minor: 2, patch: 3, build: nil },
+            format: F.new(formatter)
+          )))
       end
 
       it 'allows parts to be zero' do
         expect(definition.parse('0.0.0-0'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     build: Shivers::Parts::Numeric.new,
-                     core_separator: Shivers::Parts::Static.new(value: '.'),
-                     build_separator: Shivers::Parts::Static.new(value: '-')
-                   },
-                   values: { major: 0, minor: 0, patch: 0, build: 0 },
-                   format: Shivers::Format.new(formatter)
-                 )))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: { major: 0, minor: 0, patch: 0, build: 0 },
+            format: F.new(formatter)
+          )))
       end
 
       it 'allows parts to be multiple digits' do
         expect(definition.parse('12.10.246-1298'))
-          .to(eq(Shivers::Version2.new(
-                   parts: {
-                     major: Shivers::Parts::Numeric.new,
-                     minor: Shivers::Parts::Numeric.new,
-                     patch: Shivers::Parts::Numeric.new,
-                     build: Shivers::Parts::Numeric.new,
-                     core_separator: Shivers::Parts::Static.new(value: '.'),
-                     build_separator: Shivers::Parts::Static.new(value: '-')
-                   },
-                   values: { major: 12, minor: 10, patch: 246, build: 1298 },
-                   format: Shivers::Format.new(formatter)
-                 )))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: { major: 12, minor: 10, patch: 246, build: 1298 },
+            format: F.new(formatter)
+          )))
       end
 
-      it 'throws if major missing' do
+      it 'throws if required parts missing' do
         expect { definition.parse('.3.1-1') }
           .to(raise_error(
                 ArgumentError,
                 "Version string: '.3.1-1' does not satisfy expected format."
               ))
-      end
-
-      it 'throws if minor missing' do
         expect { definition.parse('1..6-1') }
           .to(raise_error(
                 ArgumentError,
                 "Version string: '1..6-1' does not satisfy expected format."
               ))
-      end
-
-      it 'throws if patch missing' do
         expect { definition.parse('1.6.-1') }
           .to(raise_error(
                 ArgumentError,
@@ -379,11 +167,360 @@ describe Shivers::VersionDefinition do
               ))
       end
 
-      it 'throws if optional build part partially provided' do
+      it 'throws if optional parts partially provided' do
         expect { definition.parse('1.6.2-') }
           .to(raise_error(
                 ArgumentError,
                 "Version string: '1.6.2-' does not satisfy expected format."
+              ))
+      end
+    end
+
+    context 'for a version with optional prerelease and metadata parts' do
+      let(:formatter) do
+        lambda { |v|
+          [
+            v.major, v.core_separator,
+            v.minor, v.core_separator,
+            v.patch,
+            v.optionally do |o|
+              [o.prerelease_separator,
+               o.prerelease_prefix,
+               o.prerelease]
+            end,
+            v.optionally { |o| [o.build_separator, o.build] }
+          ]
+        }
+      end
+
+      let(:definition) do
+        Shivers::VersionDefinition.new(
+          parts: {
+            major: { type: :numeric },
+            minor: { type: :numeric },
+            patch: { type: :numeric },
+            prerelease: { type: :numeric },
+            build: { type: :numeric },
+            prerelease_prefix: { type: :static, value: 'rc' },
+            core_separator: { type: :static, value: '.' },
+            prerelease_separator: { type: :static, value: '-' },
+            build_separator: { type: :static, value: '+' }
+          },
+          formatter: formatter
+        )
+      end
+
+      let(:converted_parts) do
+        {
+          major: P::Numeric.new,
+          minor: P::Numeric.new,
+          patch: P::Numeric.new,
+          prerelease: P::Numeric.new,
+          build: P::Numeric.new,
+          prerelease_prefix: P::Static.new(value: 'rc'),
+          core_separator: P::Static.new(value: '.'),
+          prerelease_separator: P::Static.new(value: '-'),
+          build_separator: P::Static.new(value: '+')
+        }
+      end
+
+      it 'parses valid version string with optional parts' do
+        expect(definition.parse('1.2.3-rc4+1234'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2, patch: 3, prerelease: 4, build: 1234
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string without optional prerelease part' do
+        expect(definition.parse('1.2.3+1234'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2, patch: 3, prerelease: nil, build: 1234
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string without optional build part' do
+        expect(definition.parse('1.2.3-rc4'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2, patch: 3, prerelease: 4, build: nil
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string without all optional parts' do
+        expect(definition.parse('1.2.3'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2, patch: 3, prerelease: nil, build: nil
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'allows parts to be zero' do
+        expect(definition.parse('0.0.0-rc0+0'))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: {
+              major: 0, minor: 0, patch: 0, prerelease: 0, build: 0
+            },
+            format: F.new(formatter)
+          )))
+      end
+
+      it 'allows parts to be multiple digits' do
+        expect(definition.parse('12.10.246-rc1298+764'))
+          .to(eq(V.new(
+            parts: converted_parts,
+            values: {
+              major: 12, minor: 10, patch: 246,
+              prerelease: 1298, build: 764
+            },
+            format: F.new(formatter)
+          )))
+      end
+
+      it 'throws if required parts missing' do
+        expect { definition.parse('.3.1-rc1+5') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '.3.1-rc1+5' does not satisfy expected format."
+              ))
+        expect { definition.parse('1..6-rc1+5') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1..6-rc1+5' does not satisfy expected format."
+              ))
+        expect { definition.parse('1.6.-rc1+5') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6.-rc1+5' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws if optional parts partially provided' do
+        expect { definition.parse('1.6.2-rc+5') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6.2-rc+5' does not satisfy expected format."
+              ))
+        expect { definition.parse('1.6.2-rc1+') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6.2-rc1+' does not satisfy expected format."
+              ))
+      end
+    end
+
+    context 'for a version number with optional alphanumeric prerelease part' do
+      let(:formatter) do
+        lambda { |v|
+          [
+            v.major, v.core_separator, v.minor,
+            v.optionally { |o| [o.prerelease_separator, o.prerelease] }
+          ]
+        }
+      end
+
+      let(:definition) do
+        Shivers::VersionDefinition.new(
+          parts: {
+            major: { type: :numeric },
+            minor: { type: :numeric },
+            prerelease: { type: :alphanumeric },
+            core_separator: { type: :static, value: '.' },
+            prerelease_separator: { type: :static, value: '-' }
+          },
+          formatter: formatter
+        )
+      end
+
+      let(:converted_parts) do
+        {
+          major: P::Numeric.new,
+          minor: P::Numeric.new,
+          prerelease: P::Alphanumeric.new,
+          core_separator: P::Static.new(value: '.'),
+          prerelease_separator: P::Static.new(value: '-'),
+        }
+      end
+
+      it 'parses valid version string with optional prerelease part' do
+        expect(definition.parse('1.2-a2b36d'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2, prerelease: 'a2b36d'
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string without optional prerelease part' do
+        expect(definition.parse('1.2'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: { major: 1, minor: 2, prerelease: nil },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'throws if required parts missing' do
+        expect { definition.parse('.3-AB1') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '.3-AB1' does not satisfy expected format."
+              ))
+        expect { definition.parse('1..AB1') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1..AB1' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws if optional parts partially provided' do
+        expect { definition.parse('1.6-') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6-' does not satisfy expected format."
+              ))
+      end
+    end
+
+    context 'for a version number with optional recursive alphanumeric ' \
+            'prerelease part' do
+      let(:formatter) do
+        lambda { |v|
+          [
+            v.major, v.dot_separator, v.minor,
+            v.optionally do |o|
+              [
+                o.prerelease_separator,
+                o.recursively(:prerelease) do |r|
+                  r.first { |f| [f.prerelease_identifier] }
+                  r.rest { |s| [s.dot_separator, s.prerelease_identifier] }
+                end
+              ]
+            end
+          ]
+        }
+      end
+
+      let(:definition) do
+        Shivers::VersionDefinition.new(
+          parts: {
+            major: { type: :numeric },
+            minor: { type: :numeric },
+            dot_separator: { type: :static, value: '.' },
+            prerelease_separator: { type: :static, value: '-' },
+            prerelease_identifier: {
+              type: :alphanumeric,
+              traits: [:multivalued]
+            }
+          },
+          formatter: formatter
+        )
+      end
+
+      let(:converted_parts) do
+        {
+          major: P::Numeric.new,
+          minor: P::Numeric.new,
+          dot_separator: P::Static.new(value: '.'),
+          prerelease_separator: P::Static.new(value: '-'),
+          prerelease_identifier: P::Alphanumeric.new(traits: [:multivalued])
+        }
+      end
+
+      it 'parses valid version string with optional prerelease part with ' \
+         'single identifier' do
+        expect(definition.parse('1.2-a2b36d'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2, prerelease_identifier: ['a2b36d']
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string with optional prerelease part with ' \
+         'multiple identifiers' do
+        expect(definition.parse('1.2-a2b36d.o5y6er.qw32kj'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: ['a2b36d', 'o5y6er', 'qw32kj']
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string without optional prerelease part' do
+        expect(definition.parse('1.2'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: { major: 1, minor: 2, prerelease_identifier: nil },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'throws if required parts missing' do
+        expect { definition.parse('.3-AB1') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '.3-AB1' does not satisfy expected format."
+              ))
+        expect { definition.parse('1..AB1') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1..AB1' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws if optional parts partially provided' do
+        expect { definition.parse('1.6-') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6-' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws if recursive parts partially provided' do
+        expect { definition.parse('1.6-AB1.') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6-AB1.' does not satisfy expected format."
               ))
       end
     end

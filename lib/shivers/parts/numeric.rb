@@ -6,14 +6,14 @@ module Shivers
       def initialize(_ = {}); end
 
       def matcher
-        /(0|[1-9]\d*)/
+        /0|[1-9]\d*/
       end
 
       def convert(value)
         value&.to_i
       end
 
-      def captured?
+      def capturable?
         true
       end
 

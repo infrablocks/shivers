@@ -8,29 +8,74 @@ module Shivers
       @formatter = formatter
     end
 
+    def visit(visitor)
+      @formatter.call(visitor)
+    end
+
+    def extract_children(parts, captures, children)
+      children.reduce(captures) do |captures, child|
+        target = captures[child.capture_group]
+        first_match = child.first.match(target)
+
+        return captures unless first_match
+
+        first_captures = first_match.named_captures.transform_keys(&:to_sym)
+        rest_match = first_captures[:rest].scan(child.rest)
+        rest_names = child.rest.names.map(&:to_sym)
+        rest_captures = rest_match.reduce({}) do |captures, matches|
+          captures.merge(rest_names.zip(matches).to_h) do |name, left, right|
+            if parts[name]&.multivalued?
+              [left].append(right)
+            else
+              right
+            end
+          end
+        end
+        captures = first_captures.reduce(captures) do |captures, capture|
+          name, value = capture
+          if parts[name]&.multivalued?
+            captures.merge(name => (captures[name] || []).append(value))
+          else
+            captures.merge(name => value)
+          end
+        end
+        captures = rest_captures.reduce(captures) do |captures, capture|
+          name, value = capture
+          if parts[name]&.multivalued?
+            captures.merge(name => (captures[name] || []).concat(value))
+          else
+            captures.merge(name => value)
+          end
+        end
+
+        captures
+      end
+    end
+
     def extract(parts, value)
-      matcher_visitor = MatcherVisitor.new(parts)
-      capture_group_visitor = CaptureGroupVisitor.new(parts)
+      matcher_visitor = Visitors::MatcherVisitor.new(parts)
 
       @formatter.call(matcher_visitor)
-      @formatter.call(capture_group_visitor)
 
-      matcher = matcher_visitor.full_matcher
-      capture_groups = capture_group_visitor.capture_groups
+      result = matcher_visitor.result
+      parent_matcher = /\A#{result.parent}\z/
 
-      match = matcher.match(value)
+      parent_match = parent_matcher.match(value)
 
-      unless match
+      unless parent_match
         raise(
           ArgumentError,
           "Version string: '#{value}' does not satisfy expected format."
         )
       end
 
-      capture_groups
-        .transform_values do |group|
-          group[:part].convert(match[group[:index]])
-        end
+      parent_captures = parent_match.named_captures.transform_keys(&:to_sym)
+      total_captures = extract_children(parts, parent_captures, result.children)
+
+      parts
+        .select { |_, part| part.capturable? }
+        .map { |name, part| [name, part&.convert(total_captures[name])] }
+        .to_h
     end
 
     def ==(other)
