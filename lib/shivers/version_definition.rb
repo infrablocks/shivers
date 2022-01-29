@@ -4,6 +4,7 @@ require 'ostruct'
 
 require_relative 'parts'
 require_relative 'format'
+require_relative 'visitors'
 
 module Shivers
   class VersionDefinition
@@ -18,15 +19,19 @@ module Shivers
     def initialize(definition)
       @parts =
         definition[:parts]
-        .map { |name, part| [name, PART_TYPES[part[:type]].new(part)] }
-        .to_h
+        .transform_values { |part| PART_TYPES[part[:type]].new(part) }
       @format = Format.new(definition[:formatter])
     end
 
     def parse(value)
+      extract_visitor = Visitors::ExtractVisitor.new(@parts, value)
+
+      @format.visit(extract_visitor)
+
       Version2.new(
         parts: @parts, format: @format,
-        values: @format.extract(@parts, value))
+        values: extract_visitor.result
+      )
     end
 
     def ==(other)

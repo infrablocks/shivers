@@ -14,10 +14,10 @@ describe Shivers::Version2 do
       }
       values = { major: 2, minor: 1 }
 
-      first = Shivers::Version2.new(
+      first = described_class.new(
         parts: parts, values: values, format: format
       )
-      second = Shivers::Version2.new(
+      second = described_class.new(
         parts: parts, values: values, format: format
       )
 
@@ -30,7 +30,7 @@ describe Shivers::Version2 do
       format = Shivers::Format.new(formatter)
       values = { major: 2, minor: 1 }
 
-      first = Shivers::Version2.new(
+      first = described_class.new(
         format: format, values: values,
         parts: {
           major: Shivers::Parts::Numeric.new,
@@ -38,7 +38,7 @@ describe Shivers::Version2 do
           separator: Shivers::Parts::Static.new(value: ';')
         }
       )
-      second = Shivers::Version2.new(
+      second = described_class.new(
         format: format, values: values,
         parts: {
           major: Shivers::Parts::Numeric.new,
@@ -60,10 +60,10 @@ describe Shivers::Version2 do
         separator: Shivers::Parts::Static.new(value: '.')
       }
 
-      first = Shivers::Version2.new(
+      first = described_class.new(
         parts: parts, format: format, values: { major: 2, minor: 1 }
       )
-      second = Shivers::Version2.new(
+      second = described_class.new(
         parts: parts, format: format, values: { major: 1, minor: 7 }
       )
 
@@ -79,13 +79,13 @@ describe Shivers::Version2 do
       }
       values = { major: 2, minor: 1 }
 
-      first = Shivers::Version2.new(
+      first = described_class.new(
         parts: parts, values: values,
         format: Shivers::Format.new(lambda { |v|
           [v.major, v.optionally { |o| [o.separator, o.minor] }]
         })
       )
-      second = Shivers::Version2.new(
+      second = described_class.new(
         parts: parts, values: values,
         format: Shivers::Format.new(lambda { |v|
           [v.major, v.separator, v.minor]
@@ -104,12 +104,14 @@ describe Shivers::Version2 do
         minor: Shivers::Parts::Numeric.new,
         separator: Shivers::Parts::Static.new(value: '.')
       }
-      values = {major: 3, minor: 2}
+      values = { major: 3, minor: 2 }
 
-      first = Shivers::Version2.new(
-        parts: parts, values: values, format: format)
-      second = Class.new(Shivers::Version2).new(
-        parts: parts, values: values, format: format)
+      first = described_class.new(
+        parts: parts, values: values, format: format
+      )
+      second = Class.new(described_class).new(
+        parts: parts, values: values, format: format
+      )
 
       expect(first).not_to(eql(second))
       expect(first).not_to(be == second)
@@ -125,10 +127,12 @@ describe Shivers::Version2 do
       }
       values = { major: 2, minor: 1 }
 
-      first = Shivers::Version2.new(
-        parts: parts, values: values, format: format)
-      second = Shivers::Version2.new(
-        parts: parts, values: values, format: format)
+      first = described_class.new(
+        parts: parts, values: values, format: format
+      )
+      second = described_class.new(
+        parts: parts, values: values, format: format
+      )
 
       expect(first.hash).to(eq(second.hash))
     end
@@ -138,7 +142,7 @@ describe Shivers::Version2 do
       format = Shivers::Format.new(formatter)
       values = { major: 2, minor: 1 }
 
-      first = Shivers::Version2.new(
+      first = described_class.new(
         format: format, values: values,
         parts: {
           major: Shivers::Parts::Numeric.new,
@@ -146,7 +150,7 @@ describe Shivers::Version2 do
           separator: Shivers::Parts::Static.new(value: ';')
         }
       )
-      second = Shivers::Version2.new(
+      second = described_class.new(
         format: format, values: values,
         parts: {
           major: Shivers::Parts::Numeric.new,
@@ -167,10 +171,10 @@ describe Shivers::Version2 do
         separator: Shivers::Parts::Static.new(value: '.')
       }
 
-      first = Shivers::Version2.new(
+      first = described_class.new(
         parts: parts, format: format, values: { major: 2, minor: 1 }
       )
-      second = Shivers::Version2.new(
+      second = described_class.new(
         parts: parts, format: format, values: { major: 1, minor: 7 }
       )
 
@@ -185,13 +189,13 @@ describe Shivers::Version2 do
       }
       values = { major: 2, minor: 1 }
 
-      first = Shivers::Version2.new(
+      first = described_class.new(
         parts: parts, values: values,
         format: Shivers::Format.new(lambda { |v|
           [v.major, v.optional { |o| [o.separator, o.minor] }]
         })
       )
-      second = Shivers::Version2.new(
+      second = described_class.new(
         parts: parts, values: values,
         format: Shivers::Format.new(lambda { |v|
           [v.major, v.separator, v.minor]
@@ -209,12 +213,14 @@ describe Shivers::Version2 do
         minor: Shivers::Parts::Numeric.new,
         separator: Shivers::Parts::Static.new(value: '.')
       }
-      values = { major: 1, minor: 2}
+      values = { major: 1, minor: 2 }
 
-      first = Shivers::Version2.new(
-        parts: parts, values: values, format: format)
-      second = Class.new(Shivers::Version2).new(
-        parts: parts, values: values, format: format)
+      first = described_class.new(
+        parts: parts, values: values, format: format
+      )
+      second = Class.new(described_class).new(
+        parts: parts, values: values, format: format
+      )
 
       expect(first.hash).not_to(eq(second.hash))
     end

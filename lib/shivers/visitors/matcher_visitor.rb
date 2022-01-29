@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'ostruct'
 
 module Shivers
@@ -82,9 +83,19 @@ module Shivers
       end
 
       def method_missing(symbol, *_)
+        unless respond_to_missing?(symbol)
+          raise NoMethodError.new(
+            "DSL does not include an element with name: '#{symbol}'. "\
+            'Check usage.',
+            symbol
+          )
+        end
+
         part = @parts[symbol]
         matcher = part.matcher
-        matcher = /(?<#{symbol}>#{matcher.source})/ if part.capturable? && @capture
+        if part.capturable? && @capture
+          matcher = /(?<#{symbol}>#{matcher.source})/
+        end
         @matchers << matcher
       end
 

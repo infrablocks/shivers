@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'ostruct'
 require 'spec_helper'
 
 describe Shivers::Visitors::MatcherVisitor do
@@ -20,11 +21,16 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expect(visitor.matchers)
-      .to(eq({
-               parent: /(?<first>0|[1-9]\d*)\.(?<second>0|[1-9]\d*)\.(?<third>[a-zA-Z0-9]+)/,
-               children: []
-             }))
+    expected_parent_regex =
+      /(?<first>0|[1-9]\d*)\.(?<second>0|[1-9]\d*)\.(?<third>[a-zA-Z0-9]+)/
+
+    expect(visitor.result)
+      .to(eq(OpenStruct.new(
+               {
+                 parent: expected_parent_regex,
+                 children: []
+               }
+             )))
   end
 
   it 'produces matchers for parts and format with single optional section' do
@@ -42,11 +48,16 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expect(visitor.matchers)
-      .to(eq({
-               parent: /(?<first>0|[1-9]\d*)(?:\.(?<second>[a-zA-Z0-9]+))?/,
-               children: []
-             }))
+    expected_parent_regex =
+      /(?<first>0|[1-9]\d*)(?:\.(?<second>[a-zA-Z0-9]+))?/
+
+    expect(visitor.result)
+      .to(eq(OpenStruct.new(
+               {
+                 parent: expected_parent_regex,
+                 children: []
+               }
+             )))
   end
 
   it 'produces matchers for parts and format with multiple optional section' do
@@ -70,18 +81,29 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expect(visitor.matchers)
-      .to(eq({
-               parent: /(?<first>0|[1-9]\d*)(?:\.(?<second>[a-zA-Z0-9]+))?(?:\-(?<third>[a-zA-Z0-9]+))?/,
-               children: []
-             }))
+    first_part = /(?<first>0|[1-9]\d*)/
+    second_part = /(?:\.(?<second>[a-zA-Z0-9]+))?/
+    third_part = /(?:\-(?<third>[a-zA-Z0-9]+))?/
+
+    expected_parent_regex =
+      /#{first_part.source}#{second_part.source}#{third_part.source}/
+
+    expect(visitor.result)
+      .to(eq(OpenStruct.new(
+               {
+                 parent: expected_parent_regex,
+                 children: []
+               }
+             )))
   end
 
   it 'produces matchers for parts and format with nested optional sections' do
     formatter = lambda do |v|
-      [v.first, v.optionally { |o1|
-        [o1.separator, o1.second, o1.optionally { |o2|
-          [o2.separator, o2.third] }] }]
+      [v.first, v.optionally do |o1|
+        [o1.separator, o1.second, o1.optionally do |o2|
+          [o2.separator, o2.third]
+        end]
+      end]
     end
     format = F.new(formatter)
     parts = {
@@ -95,21 +117,30 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expect(visitor.matchers)
-      .to(eq({
-               parent: /(?<first>0|[1-9]\d*)(?:\.(?<second>[a-zA-Z0-9]+)(?:\.(?<third>[a-zA-Z0-9]+))?)?/,
+    first_part = /(?<first>0|[1-9]\d*)/
+    optional_part =
+      /(?:\.(?<second>[a-zA-Z0-9]+)(?:\.(?<third>[a-zA-Z0-9]+))?)?/
+
+    expected_parent_regex =
+      /#{first_part.source}#{optional_part.source}/
+
+    expect(visitor.result)
+      .to(eq(OpenStruct.new(
+        {
+               parent: expected_parent_regex,
                children: []
-             }))
+             }
+      )))
   end
 
   it 'produces matchers for parts and format with single recursive section' do
     formatter = lambda do |v|
       [
         v.first,
-        v.recursively(:prerelease) { |r|
+        v.recursively(:prerelease) do |r|
           r.first { |f| [f.separator, f.second] }
           r.rest { |s| [s.separator, s.second] }
-        }
+        end
       ]
     end
     format = F.new(formatter)
@@ -123,16 +154,25 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expect(visitor.matchers)
-      .to(eq({
-               parent: /(?<first>0|[1-9]\d*)(?<prerelease>\.[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*)?/,
-               children: [
-                 {
-                   capture_group: :prerelease,
-                   first: /\.(?<second>[a-zA-Z0-9]+)(?<rest>(?:\.[a-zA-Z0-9]+)*)?/,
-                   rest: /\.(?<second>[a-zA-Z0-9]+)/
-                 }
-               ]
-             }))
+    expected_parent_regex =
+      /(?<first>0|[1-9]\d*)(?<prerelease>\.[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*)/
+    expected_children_regexes =
+      [
+        OpenStruct.new(
+          {
+          capture_group: :prerelease,
+          first: /\.(?<second>[a-zA-Z0-9]+)(?<rest>(?:\.[a-zA-Z0-9]+)*)?/,
+          rest: /\.(?<second>[a-zA-Z0-9]+)/
+        }
+        )
+      ]
+
+    expect(visitor.result)
+      .to(eq(OpenStruct.new(
+        {
+               parent: expected_parent_regex,
+               children: expected_children_regexes
+             }
+          )))
   end
 end

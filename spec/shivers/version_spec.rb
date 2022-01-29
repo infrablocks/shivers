@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Shivers::Version do
@@ -5,18 +7,18 @@ describe Shivers::Version do
 
   describe '.from_file' do
     it 'uses a version of 0.0.0 and a git SHA of LOCAL by default' do
-      version = Shivers::Version.from_file('non/existing/path')
+      version = described_class.from_file('non/existing/path')
 
       expect(version.to_s)
-          .to(eq("0.0.0+LOCAL"))
+        .to(eq('0.0.0+LOCAL'))
     end
 
     it 'reads the git SHA from the GIT_SHA environment variable when present' do
       with_env(GIT_SHA: 'ab4d') do
-        version = Shivers::Version.from_file('non/existing/path')
+        version = described_class.from_file('non/existing/path')
 
         expect(version.to_s)
-            .to(eq("0.0.0+ab4d"))
+          .to(eq('0.0.0+ab4d'))
       end
     end
 
@@ -28,34 +30,34 @@ describe Shivers::Version do
         file.write("1.2.0\n")
       end
 
-      version = Shivers::Version.from_file(path)
+      version = described_class.from_file(path)
 
       expect(version.to_s)
-          .to(eq("1.2.0+LOCAL"))
+        .to(eq('1.2.0+LOCAL'))
     end
   end
 
-  describe ".new" do
+  describe '.new' do
     it 'throws if version string is not a valid semantic vesion' do
-      expect {
-        Shivers::Version.new("wat")
-      }.to(raise_error(ArgumentError))
+      expect do
+        described_class.new('wat')
+      end.to(raise_error(ArgumentError))
     end
   end
 
   describe '#to_docker_tag' do
     it 'converts + to underscore in the version string' do
-      version = Shivers::Version.new("1.2.3+1bcd")
+      version = described_class.new('1.2.3+1bcd')
 
       expect(version.to_docker_tag)
-          .to(eq("1.2.3_1bcd"))
+        .to(eq('1.2.3_1bcd'))
     end
 
     it 'converts the string to lowercase' do
-      version = Shivers::Version.new("1.2.3-RC.1+LOCAL")
+      version = described_class.new('1.2.3-RC.1+LOCAL')
 
       expect(version.to_docker_tag)
-          .to(eq("1.2.3-rc.1_local"))
+        .to(eq('1.2.3-rc.1_local'))
     end
   end
 

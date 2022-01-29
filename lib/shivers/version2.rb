@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Shivers
   class Version2
     def initialize(data)

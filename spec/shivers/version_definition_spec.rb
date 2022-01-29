@@ -10,7 +10,7 @@ describe Shivers::VersionDefinition do
       end
 
       let(:definition) do
-        Shivers::VersionDefinition.new(
+        described_class.new(
           parts: {
             major: { type: :numeric },
             minor: { type: :numeric },
@@ -33,28 +33,28 @@ describe Shivers::VersionDefinition do
       it 'parses valid version string' do
         expect(definition.parse('1.2.3'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: { major: 1, minor: 2, patch: 3 },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: { major: 1, minor: 2, patch: 3 },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'allows parts to be zero' do
         expect(definition.parse('0.0.0'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: { major: 0, minor: 0, patch: 0 },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: { major: 0, minor: 0, patch: 0 },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'allows parts to be multiple digits' do
         expect(definition.parse('12.10.246'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: { major: 12, minor: 10, patch: 246 },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: { major: 12, minor: 10, patch: 246 },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'throws if required parts missing' do
@@ -89,7 +89,7 @@ describe Shivers::VersionDefinition do
       end
 
       let(:definition) do
-        Shivers::VersionDefinition.new(
+        described_class.new(
           parts: {
             major: { type: :numeric },
             minor: { type: :numeric },
@@ -116,37 +116,37 @@ describe Shivers::VersionDefinition do
       it 'parses valid version string with optional part' do
         expect(definition.parse('1.2.3-4'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: { major: 1, minor: 2, patch: 3, build: 4 },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: { major: 1, minor: 2, patch: 3, build: 4 },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'parses valid version string without optional part' do
         expect(definition.parse('1.2.3'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: { major: 1, minor: 2, patch: 3, build: nil },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: { major: 1, minor: 2, patch: 3, build: nil },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'allows parts to be zero' do
         expect(definition.parse('0.0.0-0'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: { major: 0, minor: 0, patch: 0, build: 0 },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: { major: 0, minor: 0, patch: 0, build: 0 },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'allows parts to be multiple digits' do
         expect(definition.parse('12.10.246-1298'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: { major: 12, minor: 10, patch: 246, build: 1298 },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: { major: 12, minor: 10, patch: 246, build: 1298 },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'throws if required parts missing' do
@@ -194,7 +194,7 @@ describe Shivers::VersionDefinition do
       end
 
       let(:definition) do
-        Shivers::VersionDefinition.new(
+        described_class.new(
           parts: {
             major: { type: :numeric },
             minor: { type: :numeric },
@@ -279,24 +279,24 @@ describe Shivers::VersionDefinition do
       it 'allows parts to be zero' do
         expect(definition.parse('0.0.0-rc0+0'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: {
-              major: 0, minor: 0, patch: 0, prerelease: 0, build: 0
-            },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: {
+                     major: 0, minor: 0, patch: 0, prerelease: 0, build: 0
+                   },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'allows parts to be multiple digits' do
         expect(definition.parse('12.10.246-rc1298+764'))
           .to(eq(V.new(
-            parts: converted_parts,
-            values: {
-              major: 12, minor: 10, patch: 246,
-              prerelease: 1298, build: 764
-            },
-            format: F.new(formatter)
-          )))
+                   parts: converted_parts,
+                   values: {
+                     major: 12, minor: 10, patch: 246,
+                     prerelease: 1298, build: 764
+                   },
+                   format: F.new(formatter)
+                 )))
       end
 
       it 'throws if required parts missing' do
@@ -342,7 +342,7 @@ describe Shivers::VersionDefinition do
       end
 
       let(:definition) do
-        Shivers::VersionDefinition.new(
+        described_class.new(
           parts: {
             major: { type: :numeric },
             minor: { type: :numeric },
@@ -360,7 +360,7 @@ describe Shivers::VersionDefinition do
           minor: P::Numeric.new,
           prerelease: P::Alphanumeric.new,
           core_separator: P::Static.new(value: '.'),
-          prerelease_separator: P::Static.new(value: '-'),
+          prerelease_separator: P::Static.new(value: '-')
         }
       end
 
@@ -430,7 +430,7 @@ describe Shivers::VersionDefinition do
       end
 
       let(:definition) do
-        Shivers::VersionDefinition.new(
+        described_class.new(
           parts: {
             major: { type: :numeric },
             minor: { type: :numeric },
@@ -477,7 +477,7 @@ describe Shivers::VersionDefinition do
                   parts: converted_parts,
                   values: {
                     major: 1, minor: 2,
-                    prerelease_identifier: ['a2b36d', 'o5y6er', 'qw32kj']
+                    prerelease_identifier: %w[a2b36d o5y6er qw32kj]
                   },
                   format: F.new(formatter)
                 )
@@ -534,10 +534,10 @@ describe Shivers::VersionDefinition do
         major: { type: :numeric }
       }
 
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: parts, formatter: formatter
       )
-      second = Shivers::VersionDefinition.new(
+      second = described_class.new(
         parts: parts, formatter: formatter
       )
 
@@ -551,11 +551,11 @@ describe Shivers::VersionDefinition do
         major: { type: :numeric }
       }
 
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: parts,
         formatter: ->(v) { [v.optionally(&:prefix), v.major] }
       )
-      second = Shivers::VersionDefinition.new(
+      second = described_class.new(
         parts: parts,
         formatter: ->(v) { [v.prefix, v.major] }
       )
@@ -566,14 +566,14 @@ describe Shivers::VersionDefinition do
 
     it 'is not equal to other with different parts' do
       formatter = ->(v) { [v.prefix, v.major] }
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: {
           prefix: { type: :static, value: 'V' },
           major: { type: :numeric }
         },
         formatter: formatter
       )
-      second = Shivers::VersionDefinition.new(
+      second = described_class.new(
         parts: {
           prefix: { type: :static, value: 'v' },
           major: { type: :numeric }
@@ -592,10 +592,10 @@ describe Shivers::VersionDefinition do
         major: { type: :numeric }
       }
 
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: parts, formatter: formatter
       )
-      second = Class.new(Shivers::VersionDefinition).new(
+      second = Class.new(described_class).new(
         parts: parts, formatter: formatter
       )
 
@@ -610,10 +610,10 @@ describe Shivers::VersionDefinition do
         major: { type: :numeric }
       }
 
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: parts, formatter: formatter
       )
-      second = Shivers::VersionDefinition.new(
+      second = described_class.new(
         parts: parts, formatter: formatter
       )
 
@@ -626,11 +626,11 @@ describe Shivers::VersionDefinition do
         major: { type: :numeric }
       }
 
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: parts,
         formatter: ->(v) { [v.optionally(&:prefix), v.major] }
       )
-      second = Shivers::VersionDefinition.new(
+      second = described_class.new(
         parts: parts,
         formatter: ->(v) { [v.prefix, v.major] }
       )
@@ -640,14 +640,14 @@ describe Shivers::VersionDefinition do
 
     it 'has different hash if other has different parts' do
       formatter = ->(v) { [v.prefix, v.major] }
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: {
           prefix: { type: :static, value: 'V' },
           major: { type: :numeric }
         },
         formatter: formatter
       )
-      second = Shivers::VersionDefinition.new(
+      second = described_class.new(
         parts: {
           prefix: { type: :static, value: 'v' },
           major: { type: :numeric }
@@ -665,10 +665,10 @@ describe Shivers::VersionDefinition do
         major: { type: :numeric }
       }
 
-      first = Shivers::VersionDefinition.new(
+      first = described_class.new(
         parts: parts, formatter: formatter
       )
-      second = Class.new(Shivers::VersionDefinition).new(
+      second = Class.new(described_class).new(
         parts: parts, formatter: formatter
       )
 

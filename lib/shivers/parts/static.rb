@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Shivers
   module Parts
     class Static
