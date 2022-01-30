@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe Shivers::Parts::Numeric do
-  context 'equality' do
+  describe 'equality' do
     it 'is equal to other of same type' do
       first = described_class.new
       second = described_class.new

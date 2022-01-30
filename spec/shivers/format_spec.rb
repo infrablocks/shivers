@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe Shivers::Format do
-  context 'equality' do
+  describe 'equality' do
     it 'is equal to other with identical formatter' do
       formatter = ->(v) { [v.whatever] }
 

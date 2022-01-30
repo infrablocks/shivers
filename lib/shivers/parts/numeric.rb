@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative '../value_equality'
+
 module Shivers
   module Parts
     class Numeric
+      include ValueEquality
+
       def initialize(_ = {}); end
 
       def matcher

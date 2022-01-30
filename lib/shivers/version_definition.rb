@@ -5,6 +5,7 @@ require 'ostruct'
 require_relative 'parts'
 require_relative 'format'
 require_relative 'visitors'
+require_relative 'value_equality'
 
 module Shivers
   class VersionDefinition
@@ -13,6 +14,8 @@ module Shivers
       alphanumeric: Parts::Alphanumeric,
       static: Parts::Static
     }.freeze
+
+    include ValueEquality
 
     attr_reader :parts, :format
 
@@ -32,16 +35,6 @@ module Shivers
         parts: @parts, format: @format,
         values: extract_visitor.result
       )
-    end
-
-    def ==(other)
-      other.class == self.class && other.state == state
-    end
-
-    alias eql? ==
-
-    def hash
-      self.class.hash ^ state.hash
     end
 
     def state

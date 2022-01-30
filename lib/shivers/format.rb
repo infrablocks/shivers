@@ -1,25 +1,17 @@
 # frozen_string_literal: true
 
-require_relative 'visitors'
+require_relative 'value_equality'
 
 module Shivers
   class Format
+    include ValueEquality
+
     def initialize(formatter)
       @formatter = formatter
     end
 
     def visit(visitor)
       @formatter.call(visitor)
-    end
-
-    def ==(other)
-      other.class == self.class && other.state == state
-    end
-
-    alias eql? ==
-
-    def hash
-      self.class.hash ^ state.hash
     end
 
     def state

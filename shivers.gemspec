@@ -22,7 +22,8 @@ Gem::Specification.new do |spec|
   spec.email = ['maintainers@infrablocks.io']
 
   spec.summary = 'Semantic version numbers for CI pipelines.'
-  spec.description = 'Semantic version number management, by file and environment, for CI pipelines.'
+  spec.description = 'Semantic version number management, by file and '\
+                     'environment, for CI pipelines.'
   spec.homepage = 'https://github.com/infrablocks/shivers'
   spec.license = 'MIT'
 
@@ -50,8 +51,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop-rake', '~> 0.5'
   spec.add_development_dependency 'rubocop-rspec', '~> 2.2'
   spec.add_development_dependency 'simplecov', '~> 0.16'
-
-  spec.metadata = {
-    'rubygems_mfa_required' => 'true'
-  }
 end

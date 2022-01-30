@@ -2,6 +2,9 @@
 
 require 'ostruct'
 
+require_relative '../matchers'
+require_relative '../value_equality'
+
 module Shivers
   module Visitors
     class MatcherVisitor
@@ -20,83 +23,77 @@ module Shivers
         end
 
         def result
-          first_matching_sub_visitor =
-            MatcherVisitor.new(@parts, capture: false)
-          first_capturing_sub_visitor =
-            MatcherVisitor.new(@parts, capture: true)
-          rest_matching_sub_visitor =
-            MatcherVisitor.new(@parts, capture: false)
-          rest_capturing_sub_visitor =
-            MatcherVisitor.new(@parts, capture: true)
+          first = visit(@first_block, MatcherVisitor.new(@parts))
+          rest = visit(@rest_block, MatcherVisitor.new(@parts))
 
-          @first_block.call(first_matching_sub_visitor)
-          @first_block.call(first_capturing_sub_visitor)
-          @rest_block.call(rest_matching_sub_visitor)
-          @rest_block.call(rest_capturing_sub_visitor)
-
-          first_matching_pattern = first_matching_sub_visitor.result.parent.source
-          first_capturing_pattern = first_capturing_sub_visitor.result.parent.source
-          rest_matching_pattern = rest_matching_sub_visitor.result.parent.source
-          rest_capturing_pattern = rest_capturing_sub_visitor.result.parent.source
-
-          matcher = /#{first_matching_pattern}(?:#{rest_matching_pattern})*/
-          first = /#{first_capturing_pattern}(?<rest>(?:#{rest_matching_pattern})*)?/
-          rest = /#{rest_capturing_pattern}/
-
-          OpenStruct.new(
-            {
-              parent: matcher,
-              child: OpenStruct.new(
-                {
-                  capture_group: @name,
-                  first: first,
-                  rest: rest
-                }
-              )
-            }
+          Matchers::Child.new(
+            parent_matcher(first, rest), parent_capturer(first, rest),
+            Matchers::Recursive.new(
+              @name, first_capturer(first, rest), rest_capturer(first, rest)
+            )
           )
+        end
+
+        private
+
+        def visit(block, visitor)
+          block.call(visitor)
+          visitor.result
+        end
+
+        def parent_matcher(first, rest)
+          /#{first.matcher.source}(?:#{rest.matcher.source})*/
+        end
+
+        def parent_capturer(first, rest)
+          /(?<#{@name}>#{first.matcher.source}(?:#{rest.matcher.source})*)/
+        end
+
+        def first_capturer(first, rest)
+          /#{first.capturer.source}(?<rest>(?:#{rest.matcher.source})*)?/
+        end
+
+        def rest_capturer(_, rest)
+          /#{rest.capturer.source}/
         end
       end
 
-      def initialize(parts, options = {})
+      def initialize(parts)
         @parts = parts
-        @capture = options.include?(:capture) ? options[:capture] : true
-        @matchers = []
+        @matching_regexps = []
+        @capturing_regexps = []
         @children = []
       end
 
       def optionally(&block)
-        sub_visitor = MatcherVisitor.new(@parts, capture: @capture)
+        sub_visitor = MatcherVisitor.new(@parts)
         block.call(sub_visitor)
-        @matchers << /(?:#{sub_visitor.result.parent.source})?/
-        @children.concat(sub_visitor.result.children)
+        result = sub_visitor.result
+        @matching_regexps << /(?:#{result.matcher.source})?/
+        @capturing_regexps << /(?:#{result.capturer.source})?/
+        @children.concat(result.children)
       end
 
       def recursively(name, &block)
         sub_visitor = RecursiveMatcherVisitor.new(name, @parts)
         block.call(sub_visitor)
         result = sub_visitor.result
-        parent = result.parent
-        parent = @capture ? /(?<#{name}>#{parent.source})/ : /#{parent.source}/
-        @matchers << parent
+        @matching_regexps << result.matcher
+        @capturing_regexps << result.capturer
         @children << result.child
       end
 
       def method_missing(symbol, *_)
-        unless respond_to_missing?(symbol)
-          raise NoMethodError.new(
-            "DSL does not include an element with name: '#{symbol}'. "\
-            'Check usage.',
-            symbol
-          )
-        end
+        raise no_dsl_element_error(symbol) unless respond_to_missing?(symbol)
 
         part = @parts[symbol]
-        matcher = part.matcher
-        if part.capturable? && @capture
-          matcher = /(?<#{symbol}>#{matcher.source})/
-        end
-        @matchers << matcher
+
+        @matching_regexps << part.matcher
+        @capturing_regexps << if part.capturable?
+                                /(?<#{symbol}>#{part.matcher.source})/
+                              else
+                                part.matcher
+                              end
       end
 
       def respond_to_missing?(symbol, _ = false)
@@ -104,11 +101,20 @@ module Shivers
       end
 
       def result
-        OpenStruct.new(
-          {
-            parent: /#{@matchers.collect(&:source).join}/,
-            children: @children
-          }
+        Matchers::Parent.new(
+          /#{@matching_regexps.collect(&:source).join}/,
+          /#{@capturing_regexps.collect(&:source).join}/,
+          @children
+        )
+      end
+
+      private
+
+      def no_dsl_element_error(symbol)
+        NoMethodError.new(
+          "DSL does not include an element with name: '#{symbol}'. "\
+          'Check usage.',
+          symbol
         )
       end
     end

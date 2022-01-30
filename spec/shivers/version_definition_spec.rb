@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 describe Shivers::VersionDefinition do
-  context 'version formats' do
-    context 'for a numeric multipart dot separated version' do
+  describe 'version formats' do
+    describe 'for a numeric multipart dot separated version' do
       let(:formatter) do
         ->(v) { [v.major, v.separator, v.minor, v.separator, v.patch] }
       end
@@ -76,7 +76,7 @@ describe Shivers::VersionDefinition do
       end
     end
 
-    context 'for a version with optional metadata part' do
+    describe 'for a version with optional metadata part' do
       let(:formatter) do
         lambda { |v|
           [
@@ -176,7 +176,7 @@ describe Shivers::VersionDefinition do
       end
     end
 
-    context 'for a version with optional prerelease and metadata parts' do
+    describe 'for a version with optional prerelease and metadata parts' do
       let(:formatter) do
         lambda { |v|
           [
@@ -331,7 +331,8 @@ describe Shivers::VersionDefinition do
       end
     end
 
-    context 'for a version number with optional alphanumeric prerelease part' do
+    describe 'for a version number with optional alphanumeric prerelease '\
+             'part' do
       let(:formatter) do
         lambda { |v|
           [
@@ -410,8 +411,8 @@ describe Shivers::VersionDefinition do
       end
     end
 
-    context 'for a version number with optional recursive alphanumeric ' \
-            'prerelease part' do
+    describe 'for a version number with optional recursive alphanumeric ' \
+             'prerelease part' do
       let(:formatter) do
         lambda { |v|
           [
@@ -526,7 +527,7 @@ describe Shivers::VersionDefinition do
     end
   end
 
-  context 'equality' do
+  describe 'equality' do
     it 'is equal to other with identical parts and formatter' do
       formatter = ->(v) { [v.prefix, v.major] }
       parts = {

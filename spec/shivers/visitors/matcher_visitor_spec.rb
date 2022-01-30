@@ -21,15 +21,16 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expected_parent_regex =
+    expected_matcher_regexp =
+      /0|[1-9]\d*\.0|[1-9]\d*\.[a-zA-Z0-9]+/
+    expected_capturer_regexp =
       /(?<first>0|[1-9]\d*)\.(?<second>0|[1-9]\d*)\.(?<third>[a-zA-Z0-9]+)/
 
     expect(visitor.result)
-      .to(eq(OpenStruct.new(
-               {
-                 parent: expected_parent_regex,
-                 children: []
-               }
+      .to(eq(M::Parent.new(
+               expected_matcher_regexp,
+               expected_capturer_regexp,
+               []
              )))
   end
 
@@ -48,24 +49,26 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expected_parent_regex =
+    expected_matcher_regexp =
+      /0|[1-9]\d*(?:\.[a-zA-Z0-9]+)?/
+    expected_capturer_regexp =
       /(?<first>0|[1-9]\d*)(?:\.(?<second>[a-zA-Z0-9]+))?/
 
     expect(visitor.result)
-      .to(eq(OpenStruct.new(
-               {
-                 parent: expected_parent_regex,
-                 children: []
-               }
+      .to(eq(M::Parent.new(
+               expected_matcher_regexp,
+               expected_capturer_regexp,
+               []
              )))
   end
 
+  # rubocop:disable Style/RedundantRegexpEscape
   it 'produces matchers for parts and format with multiple optional section' do
     formatter = lambda do |v|
       [
         v.first,
-        v.optionally { |o| [o.separator_1, o.second] },
-        v.optionally { |o| [o.separator_2, o.third] }
+        v.optionally { |o| [o.separator1, o.second] },
+        v.optionally { |o| [o.separator2, o.third] }
       ]
     end
     format = F.new(formatter)
@@ -73,29 +76,31 @@ describe Shivers::Visitors::MatcherVisitor do
       first: P::Numeric.new,
       second: P::Alphanumeric.new,
       third: P::Alphanumeric.new,
-      separator_1: P::Static.new(value: '.'),
-      separator_2: P::Static.new(value: '-')
+      separator1: P::Static.new(value: '.'),
+      separator2: P::Static.new(value: '-')
     }
 
     visitor = Vs::MatcherVisitor.new(parts)
 
     format.visit(visitor)
 
-    first_part = /(?<first>0|[1-9]\d*)/
-    second_part = /(?:\.(?<second>[a-zA-Z0-9]+))?/
-    third_part = /(?:\-(?<third>[a-zA-Z0-9]+))?/
+    first_capturer = /(?<first>0|[1-9]\d*)/
+    second_capturer = /(?:\.(?<second>[a-zA-Z0-9]+))?/
+    third_capturer = /(?:\-(?<third>[a-zA-Z0-9]+))?/
 
-    expected_parent_regex =
-      /#{first_part.source}#{second_part.source}#{third_part.source}/
+    capturers = [first_capturer, second_capturer, third_capturer]
+
+    expected_matcher_regexp = /0|[1-9]\d*(?:\.[a-zA-Z0-9]+)?(?:\-[a-zA-Z0-9]+)?/
+    expected_capturer_regexp = /#{capturers.collect(&:source).join}/
 
     expect(visitor.result)
-      .to(eq(OpenStruct.new(
-               {
-                 parent: expected_parent_regex,
-                 children: []
-               }
+      .to(eq(M::Parent.new(
+               expected_matcher_regexp,
+               expected_capturer_regexp,
+               []
              )))
   end
+  # rubocop:enable Style/RedundantRegexpEscape
 
   it 'produces matchers for parts and format with nested optional sections' do
     formatter = lambda do |v|
@@ -117,20 +122,20 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    first_part = /(?<first>0|[1-9]\d*)/
-    optional_part =
+    first_capturer = /(?<first>0|[1-9]\d*)/
+    optional_capturer =
       /(?:\.(?<second>[a-zA-Z0-9]+)(?:\.(?<third>[a-zA-Z0-9]+))?)?/
 
-    expected_parent_regex =
-      /#{first_part.source}#{optional_part.source}/
+    expected_matcher_regexp = /0|[1-9]\d*(?:\.[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)?)?/
+    expected_capturer_regexp =
+      /#{first_capturer.source}#{optional_capturer.source}/
 
     expect(visitor.result)
-      .to(eq(OpenStruct.new(
-        {
-               parent: expected_parent_regex,
-               children: []
-             }
-      )))
+      .to(eq(M::Parent.new(
+               expected_matcher_regexp,
+               expected_capturer_regexp,
+               []
+             )))
   end
 
   it 'produces matchers for parts and format with single recursive section' do
@@ -154,25 +159,23 @@ describe Shivers::Visitors::MatcherVisitor do
 
     format.visit(visitor)
 
-    expected_parent_regex =
+    expected_matcher_regexp = /0|[1-9]\d*\.[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*/
+    expected_capturer_regexp =
       /(?<first>0|[1-9]\d*)(?<prerelease>\.[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*)/
-    expected_children_regexes =
+    expected_children_matchers =
       [
-        OpenStruct.new(
-          {
-          capture_group: :prerelease,
-          first: /\.(?<second>[a-zA-Z0-9]+)(?<rest>(?:\.[a-zA-Z0-9]+)*)?/,
-          rest: /\.(?<second>[a-zA-Z0-9]+)/
-        }
+        M::Recursive.new(
+          :prerelease,
+          /\.(?<second>[a-zA-Z0-9]+)(?<rest>(?:\.[a-zA-Z0-9]+)*)?/,
+          /\.(?<second>[a-zA-Z0-9]+)/
         )
       ]
 
     expect(visitor.result)
-      .to(eq(OpenStruct.new(
-        {
-               parent: expected_parent_regex,
-               children: expected_children_regexes
-             }
-          )))
+      .to(eq(M::Parent.new(
+               expected_matcher_regexp,
+               expected_capturer_regexp,
+               expected_children_matchers
+             )))
   end
 end

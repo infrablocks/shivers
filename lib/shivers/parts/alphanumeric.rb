@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require_relative '../value_equality'
+
 module Shivers
   module Parts
     class Alphanumeric
+      include ValueEquality
+
       def initialize(data = {})
         @traits = data[:traits] || []
       end

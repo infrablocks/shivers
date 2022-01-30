@@ -1,14 +1,18 @@
 # frozen_string_literal: true
 
+require_relative '../value_equality'
+
 module Shivers
   module Parts
     class Static
+      include ValueEquality
+
       def initialize(data)
         @value = data[:value]
       end
 
       def matcher
-        /#{Regexp.escape(@value)}/
+        /#{Regexp.quote(@value)}/
       end
 
       def convert(value)
@@ -17,16 +21,6 @@ module Shivers
 
       def capturable?
         false
-      end
-
-      def ==(other)
-        other.class == self.class && other.state == state
-      end
-
-      alias eql? ==
-
-      def hash
-        self.class.hash ^ state.hash
       end
 
       def state

@@ -1,19 +1,13 @@
 # frozen_string_literal: true
 
+require_relative 'value_equality'
+
 module Shivers
   class Version2
+    include ValueEquality
+
     def initialize(data)
       @data = data
-    end
-
-    def ==(other)
-      other.class == self.class && other.state == state
-    end
-
-    alias eql? ==
-
-    def hash
-      self.class.hash ^ state.hash
     end
 
     def state

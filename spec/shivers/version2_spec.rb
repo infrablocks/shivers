@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe Shivers::Version2 do
-  context 'equality' do
+  describe 'equality' do
     it 'is equal to other with identical parts, values and format' do
       formatter = ->(v) { [v.major, v.separator, v.minor] }
       format = Shivers::Format.new(formatter)
@@ -162,7 +162,7 @@ describe Shivers::Version2 do
       expect(first.hash).not_to(eq(second.hash))
     end
 
-    it 'is not equal to other with different values' do
+    it 'has different has if other has different values' do
       formatter = ->(v) { [v.major, v.separator, v.minor] }
       format = Shivers::Format.new(formatter)
       parts = {

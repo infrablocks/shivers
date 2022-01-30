@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe Shivers::Parts::Static do
-  context 'equality' do
+  describe 'equality' do
     it 'is equal to other with same value' do
       first = described_class.new(value: '.')
       second = described_class.new(value: '.')

@@ -9,6 +9,7 @@ require 'bundler/setup'
 require 'shivers'
 
 P = Shivers::Parts
+M = Shivers::Matchers
 F = Shivers::Format
 V = Shivers::Version2
 Vs = Shivers::Visitors
