@@ -5,18 +5,20 @@ require_relative '../value_equality'
 
 module Shivers
   module Parts
-    class Numeric
+    class AlphanumericOrHyphen
       include ValueEquality
       include Mixins::Multivaluable
 
-      def initialize(_ = {}); end
+      def initialize(data = {})
+        @traits = data[:traits] || []
+      end
 
       def matcher
-        /0|[1-9]\d*/
+        /[a-zA-Z0-9-]+/
       end
 
       def convert(value)
-        value&.to_i
+        value
       end
 
       def capturable?
@@ -34,7 +36,7 @@ module Shivers
       end
 
       def state
-        []
+        [@traits]
       end
     end
   end

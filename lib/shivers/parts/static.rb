@@ -19,7 +19,15 @@ module Shivers
         value
       end
 
+      def merge(_, second)
+        second
+      end
+
       def capturable?
+        false
+      end
+
+      def multivalued?
         false
       end
 

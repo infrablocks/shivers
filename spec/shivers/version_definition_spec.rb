@@ -525,6 +525,223 @@ describe Shivers::VersionDefinition do
               ))
       end
     end
+
+    describe 'for a version number with optional recursive alphanumeric ' \
+             'or hyphen prerelease part and optional recursive alphanumeric ' \
+             'or hyphen build part' do
+      let(:formatter) do
+        lambda { |v|
+          [
+            v.major, v.dot_separator, v.minor,
+            v.optionally do |o|
+              [
+                o.prerelease_separator,
+                o.recursively(:prerelease) do |r|
+                  r.first { |f| [f.prerelease_identifier] }
+                  r.rest { |s| [s.dot_separator, s.prerelease_identifier] }
+                end
+              ]
+            end,
+            v.optionally do |o|
+              [
+                o.build_separator,
+                o.recursively(:build) do |r|
+                  r.first { |f| [f.build_identifier] }
+                  r.rest { |s| [s.dot_separator, s.build_identifier] }
+                end
+              ]
+            end
+          ]
+        }
+      end
+
+      let(:definition) do
+        described_class.new(
+          parts: {
+            major: { type: :numeric },
+            minor: { type: :numeric },
+            dot_separator: { type: :static, value: '.' },
+            prerelease_separator: { type: :static, value: '-' },
+            prerelease_identifier: {
+              type: :alphanumeric_or_hyphen,
+              traits: [:multivalued]
+            },
+            build_separator: { type: :static, value: '+' },
+            build_identifier: {
+              type: :alphanumeric_or_hyphen,
+              traits: [:multivalued]
+            }
+          },
+          formatter: formatter
+        )
+      end
+
+      let(:converted_parts) do
+        {
+          major: P::Numeric.new,
+          minor: P::Numeric.new,
+          dot_separator: P::Static.new(value: '.'),
+          prerelease_separator: P::Static.new(value: '-'),
+          prerelease_identifier:
+            P::AlphanumericOrHyphen.new(traits: [:multivalued]),
+          build_separator: P::Static.new(value: '+'),
+          build_identifier:
+            P::AlphanumericOrHyphen.new(traits: [:multivalued])
+        }
+      end
+
+      it 'parses valid version string with optional prerelease part with ' \
+         'single identifier and no optional build part' do
+        expect(definition.parse('1.2-a2-b36d'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: ['a2-b36d'],
+                    build_identifier: nil
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string with optional prerelease part with ' \
+         'multiple identifiers and no optional build part' do
+        expect(definition.parse('1.2-a2b-36d.o5-y6-er.qw3-2kj'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: %w[a2b-36d o5-y6-er qw3-2kj],
+                    build_identifier: nil
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string with optional prerelease part with ' \
+         'single identifier and optional build part with single identifier' do
+        expect(definition.parse('1.2--a2b36d+-o5y6er'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: ['-a2b36d'],
+                    build_identifier: ['-o5y6er']
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string with optional prerelease part with ' \
+         'multiple identifiers and optional build part with multiple ' \
+         'identifiers' do
+        expect(definition.parse('1.2-a2b36d--.-qw32kj+--o5y6er-.h8kr64--'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: %w[a2b36d-- -qw32kj],
+                    build_identifier: %w[--o5y6er- h8kr64--]
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string with no optional prerelease part ' \
+         'and optional build part with single identifier' do
+        expect(definition.parse('1.2+a2b36d'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: nil,
+                    build_identifier: ['a2b36d']
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string with no optional prerelease part ' \
+         'and and optional build part with multiple identifiers' do
+        expect(definition.parse('1.2+a2b36d--.-o5y6er-.qw32kj--'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: nil,
+                    build_identifier: %w[a2b36d-- -o5y6er- qw32kj--]
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'parses valid version string without optional prerelease or ' \
+         'build parts' do
+        expect(definition.parse('1.2'))
+          .to(eq(
+                V.new(
+                  parts: converted_parts,
+                  values: {
+                    major: 1, minor: 2,
+                    prerelease_identifier: nil,
+                    build_identifier: nil
+                  },
+                  format: F.new(formatter)
+                )
+              ))
+      end
+
+      it 'throws if required parts missing' do
+        expect { definition.parse('.3-AB1') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '.3-AB1' does not satisfy expected format."
+              ))
+        expect { definition.parse('1..AB1') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1..AB1' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws if optional parts partially provided' do
+        expect { definition.parse('1.6-') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6-' does not satisfy expected format."
+              ))
+        expect { definition.parse('1.6+') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6+' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws if recursive parts partially provided' do
+        expect { definition.parse('1.6-AB1.') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6-AB1.' does not satisfy expected format."
+              ))
+        expect { definition.parse('1.6+AB1.') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '1.6+AB1.' does not satisfy expected format."
+              ))
+      end
+    end
   end
 
   describe 'equality' do

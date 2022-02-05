@@ -46,12 +46,13 @@ module Shivers
         matchers.children.reduce(captures) do |caps, child|
           value = caps[child.capture_group]
           first_captures = standard_captures(child.first, value)
+
           next caps unless first_captures
 
           rest_captures = recursive_captures(first_captures[:rest], child.rest)
 
-          caps = merge_captures(caps, first_captures, :singular)
-          caps = merge_captures(caps, rest_captures, :multiple)
+          caps = merge_captures(caps, first_captures)
+          caps = merge_captures(caps, rest_captures)
 
           caps
         end
@@ -61,7 +62,7 @@ module Shivers
         match_recursively(value, matcher)
           .reduce({}) do |all_rest_captures, rest_captures|
           all_rest_captures.merge(rest_captures) do |name, existing, new|
-            merge_rest_capture_value(name, existing, new)
+            merge_capture_value(name, existing, new)
           end
         end
       end
@@ -74,31 +75,18 @@ module Shivers
         end
       end
 
-      def merge_rest_capture_value(name, existing, new)
-        if @parts[name]&.multivalued?
-          [existing].append(new)
-        else
-          new
-        end
-      end
-
-      def merge_captures(existing, new, cardinality)
+      def merge_captures(existing, new)
         new.reduce(existing) do |captures, capture|
           name, value = capture
           captures.merge(
             name =>
-              merge_capture_value(name, captures[name], value, cardinality)
+              merge_capture_value(name, captures[name], value)
           )
         end
       end
 
-      def merge_capture_value(name, existing, new, cardinality)
-        if @parts[name]&.multivalued?
-          initial = existing || []
-          initial.send(cardinality == :multiple ? :concat : :append, new)
-        else
-          new
-        end
+      def merge_capture_value(name, existing, new)
+        @parts[name]&.merge(existing, new)
       end
 
       def standard_captures(matcher, value)

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
+require_relative 'mixins/multivaluable'
 require_relative '../value_equality'
 
 module Shivers
   module Parts
     class Alphanumeric
       include ValueEquality
+      include Mixins::Multivaluable
 
       def initialize(data = {})
         @traits = data[:traits] || []
@@ -17,10 +19,6 @@ module Shivers
 
       def convert(value)
         value
-      end
-
-      def multivalued?
-        @traits.include?(:multivalued)
       end
 
       def capturable?

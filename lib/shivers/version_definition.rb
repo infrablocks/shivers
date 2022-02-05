@@ -12,6 +12,7 @@ module Shivers
     PART_TYPES = {
       numeric: Parts::Numeric,
       alphanumeric: Parts::Alphanumeric,
+      alphanumeric_or_hyphen: Parts::AlphanumericOrHyphen,
       static: Parts::Static
     }.freeze
 
