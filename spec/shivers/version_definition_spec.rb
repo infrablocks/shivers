@@ -3,7 +3,137 @@
 require 'spec_helper'
 
 describe Shivers::VersionDefinition do
-  describe 'version formats' do
+  describe 'capabilities' do
+    describe 'numeric parts' do
+      let(:formatter) do
+        ->(v) { [v.version_number] }
+      end
+
+      let(:definition) do
+        described_class.new(
+          parts: {
+            version_number: { type: :numeric }
+          },
+          formatter: formatter
+        )
+      end
+
+      let(:converted_parts) do
+        {
+          version_number: P::Numeric.new
+        }
+      end
+
+      it 'parses a zero value' do
+        expect(definition.parse('0'))
+          .to(eq(V.new(
+                   parts: converted_parts,
+                   values: { version_number: 0 },
+                   format: F.new(formatter)
+                 )))
+      end
+
+      it 'parses a single-digit value' do
+        expect(definition.parse('8'))
+          .to(eq(V.new(
+                   parts: converted_parts,
+                   values: { version_number: 8 },
+                   format: F.new(formatter)
+                 )))
+      end
+
+      it 'parses a multi-digit value' do
+        expect(definition.parse('854'))
+          .to(eq(V.new(
+                   parts: converted_parts,
+                   values: { version_number: 854 },
+                   format: F.new(formatter)
+                 )))
+      end
+
+      it 'throws when not a numeric value' do
+        expect { definition.parse('xyz') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: 'xyz' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws when sequence of digits starting with leading zeros' do
+        expect { definition.parse('00123') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '00123' does not satisfy expected format."
+              ))
+      end
+    end
+
+    describe 'alphanumeric parts' do
+      let(:formatter) do
+        ->(v) { [v.version_number] }
+      end
+
+      let(:definition) do
+        described_class.new(
+          parts: {
+            version_number: { type: :numeric }
+          },
+          formatter: formatter
+        )
+      end
+
+      let(:converted_parts) do
+        {
+          version_number: P::Numeric.new
+        }
+      end
+
+      it 'parses a zero value' do
+        expect(definition.parse('0'))
+          .to(eq(V.new(
+                   parts: converted_parts,
+                   values: { version_number: 0 },
+                   format: F.new(formatter)
+                 )))
+      end
+
+      it 'parses a single-digit value' do
+        expect(definition.parse('8'))
+          .to(eq(V.new(
+                   parts: converted_parts,
+                   values: { version_number: 8 },
+                   format: F.new(formatter)
+                 )))
+      end
+
+      it 'parses a multi-digit value' do
+        expect(definition.parse('854'))
+          .to(eq(V.new(
+                   parts: converted_parts,
+                   values: { version_number: 854 },
+                   format: F.new(formatter)
+                 )))
+      end
+
+      it 'throws when not a numeric value' do
+        expect { definition.parse('xyz') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: 'xyz' does not satisfy expected format."
+              ))
+      end
+
+      it 'throws when sequence of digits starting with leading zeros' do
+        expect { definition.parse('00123') }
+          .to(raise_error(
+                ArgumentError,
+                "Version string: '00123' does not satisfy expected format."
+              ))
+      end
+    end
+  end
+
+  describe 'formats' do
     describe 'for a numeric multipart dot separated version' do
       let(:formatter) do
         ->(v) { [v.major, v.separator, v.minor, v.separator, v.patch] }

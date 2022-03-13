@@ -26,9 +26,7 @@ describe Shivers::Version do
       path = 'some/version/file'
 
       FileUtils.mkdir_p(File.dirname(path))
-      File.open(path, 'w') do |file|
-        file.write("1.2.0\n")
-      end
+      File.write(path, "1.2.0\n")
 
       version = described_class.from_file(path)
 

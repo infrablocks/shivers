@@ -24,5 +24,8 @@ RSpec/ExampleLength:
 RSpec/MultipleExpectations:
   Enabled: false
 
+RSpec/RepeatedExampleGroupBody:
+  Enabled: false
+
 Gemspec/RequireMFA:
   Enabled: false

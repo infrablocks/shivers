@@ -99,8 +99,7 @@ module Shivers
 
       def convert_values(captures)
         capturable_parts
-          .map { |name, part| [name, part&.convert(captures[name])] }
-          .to_h
+          .to_h { |name, part| [name, part&.convert(captures[name])] }
       end
 
       def ensure_match(match)

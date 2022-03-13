@@ -34,21 +34,21 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = '>= 2.6'
+  spec.required_ruby_version = '>= 2.7'
 
   spec.add_dependency 'semantic', '~> 1.6'
 
-  spec.add_development_dependency 'bundler', '~> 2.0'
-  spec.add_development_dependency 'fakefs', '~> 1.4'
-  spec.add_development_dependency 'gem-release', '~> 2.0'
-  spec.add_development_dependency 'rake', '~> 13.0'
-  spec.add_development_dependency 'rake_circle_ci', '~> 0.9'
-  spec.add_development_dependency 'rake_github', '~> 0.9'
-  spec.add_development_dependency 'rake_gpg', '~> 0.14'
-  spec.add_development_dependency 'rake_ssh', '~> 0.6'
-  spec.add_development_dependency 'rspec', '~> 3.9'
-  spec.add_development_dependency 'rubocop', '~> 1.12'
-  spec.add_development_dependency 'rubocop-rake', '~> 0.5'
-  spec.add_development_dependency 'rubocop-rspec', '~> 2.2'
-  spec.add_development_dependency 'simplecov', '~> 0.16'
+  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'fakefs'
+  spec.add_development_dependency 'gem-release'
+  spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'rake_circle_ci'
+  spec.add_development_dependency 'rake_github'
+  spec.add_development_dependency 'rake_gpg'
+  spec.add_development_dependency 'rake_ssh'
+  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'rubocop-rake'
+  spec.add_development_dependency 'rubocop-rspec'
+  spec.add_development_dependency 'simplecov'
 end
