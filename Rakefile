@@ -113,7 +113,7 @@ end
 namespace :version do
   desc 'Bump version for specified type (pre, major, minor, patch)'
   task :bump, [:type] do |_, args|
-    sh "git status"
+    sh "git diff"
     bump_version_for(args.type)
     sh "git status"
   end
