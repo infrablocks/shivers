@@ -123,7 +123,9 @@ task :release do
 end
 
 def bump_version_for(version_type)
-  sh "gem bump --file lib/shivers/library_version.rb --version #{version_type} " \
+  version_file = 'lib/shivers/library_version.rb'
+
+  sh "gem bump --file #{version_file} --version #{version_type} " \
      '&& bundle install ' \
      '&& export LAST_MESSAGE="$(git log -1 --pretty=%B)" ' \
      '&& git commit -a --amend -m "${LAST_MESSAGE} [ci skip]"'

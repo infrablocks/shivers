@@ -2,5 +2,5 @@
 
 source 'https://rubygems.org'
 
-# Specify dependencies in lino.gemspec
+# Specify dependencies in shivers.gemspec
 gemspec
