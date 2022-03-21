@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    shivers (0.6.0.pre.3)
+    shivers (0.6.0.pre.4)
       semantic (~> 1.6)
 
 GEM
