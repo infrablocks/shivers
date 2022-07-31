@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.email = ['maintainers@infrablocks.io']
 
   spec.summary = 'Semantic version numbers for CI pipelines.'
-  spec.description = 'Semantic version number management, by file and '\
+  spec.description = 'Semantic version number management, by file and ' \
                      'environment, for CI pipelines.'
   spec.homepage = 'https://github.com/infrablocks/shivers'
   spec.license = 'MIT'

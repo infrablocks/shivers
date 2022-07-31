@@ -9,7 +9,7 @@ module Shivers
     alias eql? ==
 
     def hash
-      self.class.hash ^ state.hash
+      [self.class, state].hash
     end
   end
 end

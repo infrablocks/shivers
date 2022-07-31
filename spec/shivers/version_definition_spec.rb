@@ -461,7 +461,7 @@ describe Shivers::VersionDefinition do
       end
     end
 
-    describe 'for a version number with optional alphanumeric prerelease '\
+    describe 'for a version number with optional alphanumeric prerelease ' \
              'part' do
       let(:formatter) do
         lambda { |v|
