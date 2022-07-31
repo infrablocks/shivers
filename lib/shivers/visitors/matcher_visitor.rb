@@ -112,7 +112,7 @@ module Shivers
 
       def no_dsl_element_error(symbol)
         NoMethodError.new(
-          "DSL does not include an element with name: '#{symbol}'. "\
+          "DSL does not include an element with name: '#{symbol}'. " \
           'Check usage.',
           symbol
         )

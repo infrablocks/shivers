@@ -9,9 +9,7 @@ module Shivers
       include ValueEquality
       include Mixins::Multivaluable
 
-      # rubocop:disable Style/RedundantInitialize
       def initialize(_ = {}); end
-      # rubocop:enable Style/RedundantInitialize
 
       def matcher
         /0|[1-9]\d*/
