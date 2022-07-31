@@ -9,7 +9,7 @@ module Shivers
       include ValueEquality
       include Mixins::Multivaluable
 
-      def initialize(_ = {}); end
+      def initialize(_ = {}); end # rubocop:disable Style/RedundantInitialize, Lint/RedundantCopDisableDirective
 
       def matcher
         /0|[1-9]\d*/
@@ -30,7 +30,7 @@ module Shivers
       alias eql? ==
 
       def hash
-        self.class.hash ^ state.hash
+        [self.class, state].hash
       end
 
       def state
