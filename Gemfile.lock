@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    shivers (0.6.0.pre.7)
+    shivers (0.6.0.pre.8)
       semantic (~> 1.6)
 
 GEM
@@ -156,4 +156,4 @@ DEPENDENCIES
   simplecov
 
 BUNDLED WITH
-   2.3.11
+   2.3.24
