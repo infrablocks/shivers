@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'pp'
 require 'fileutils'
 
 require 'fakefs/spec_helpers'
