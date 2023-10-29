@@ -11,7 +11,7 @@ describe Shivers::Format do
       second = described_class.new(formatter)
 
       expect(first).to(eql(second))
-      expect(first).to(be == second)
+      expect(first).to(eq second)
     end
 
     it 'is not equal to other with different formatter' do
@@ -19,7 +19,7 @@ describe Shivers::Format do
       second = described_class.new(->(v) { [v.whatever] })
 
       expect(first).not_to(eql(second))
-      expect(first).not_to(be == second)
+      expect(first).not_to(eq second)
     end
 
     it 'is not equal to other of different type' do
@@ -29,7 +29,7 @@ describe Shivers::Format do
       second = Class.new(described_class).new(formatter)
 
       expect(first).not_to(eql(second))
-      expect(first).not_to(be == second)
+      expect(first).not_to(eq second)
     end
 
     it 'has the same hash if equal' do

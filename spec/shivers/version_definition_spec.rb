@@ -890,7 +890,7 @@ describe Shivers::VersionDefinition do
       )
 
       expect(first).to(eql(second))
-      expect(first).to(be == second)
+      expect(first).to(eq second)
     end
 
     it 'is not equal to other with different formatter' do
@@ -909,7 +909,7 @@ describe Shivers::VersionDefinition do
       )
 
       expect(first).not_to(eql(second))
-      expect(first).not_to(be == second)
+      expect(first).not_to(eq second)
     end
 
     it 'is not equal to other with different parts' do
@@ -930,7 +930,7 @@ describe Shivers::VersionDefinition do
       )
 
       expect(first).not_to(eql(second))
-      expect(first).not_to(be == second)
+      expect(first).not_to(eq second)
     end
 
     it 'is not equal to other of different type' do
@@ -948,7 +948,7 @@ describe Shivers::VersionDefinition do
       )
 
       expect(first).not_to(eql(second))
-      expect(first).not_to(be == second)
+      expect(first).not_to(eq second)
     end
 
     it 'has the same hash if equal' do

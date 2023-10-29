@@ -21,7 +21,7 @@ module Shivers
     end
 
     def to_docker_tag
-      to_s.gsub(/\+/, '_').downcase
+      to_s.gsub('+', '_').downcase
     end
 
     def to_s
