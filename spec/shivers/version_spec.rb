@@ -62,6 +62,6 @@ describe Shivers::Version do
   def with_env(env_hash, &block)
     env_hash.each { |key, value| ENV[key.to_s] = value.to_s }
     block.call
-    env_hash.each { |key, _| ENV.delete(key.to_s) }
+    env_hash.each_key { |key| ENV.delete(key.to_s) }
   end
 end

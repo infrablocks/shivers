@@ -14,7 +14,7 @@ describe Shivers::VersionDefinition do
           parts: {
             version_number: { type: :numeric }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -78,7 +78,7 @@ describe Shivers::VersionDefinition do
           parts: {
             version_number: { type: :numeric }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -147,7 +147,7 @@ describe Shivers::VersionDefinition do
             patch: { type: :numeric },
             separator: { type: :static, value: '.' }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -228,7 +228,7 @@ describe Shivers::VersionDefinition do
             core_separator: { type: :static, value: '.' },
             build_separator: { type: :static, value: '-' }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -336,7 +336,7 @@ describe Shivers::VersionDefinition do
             prerelease_separator: { type: :static, value: '-' },
             build_separator: { type: :static, value: '+' }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -481,7 +481,7 @@ describe Shivers::VersionDefinition do
             core_separator: { type: :static, value: '.' },
             prerelease_separator: { type: :static, value: '-' }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -572,7 +572,7 @@ describe Shivers::VersionDefinition do
               traits: [:multivalued]
             }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -702,7 +702,7 @@ describe Shivers::VersionDefinition do
               traits: [:multivalued]
             }
           },
-          formatter: formatter
+          formatter:
         )
       end
 
@@ -883,10 +883,10 @@ describe Shivers::VersionDefinition do
       }
 
       first = described_class.new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
       second = described_class.new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
 
       expect(first).to(eql(second))
@@ -900,11 +900,11 @@ describe Shivers::VersionDefinition do
       }
 
       first = described_class.new(
-        parts: parts,
+        parts:,
         formatter: ->(v) { [v.optionally(&:prefix), v.major] }
       )
       second = described_class.new(
-        parts: parts,
+        parts:,
         formatter: ->(v) { [v.prefix, v.major] }
       )
 
@@ -919,14 +919,14 @@ describe Shivers::VersionDefinition do
           prefix: { type: :static, value: 'V' },
           major: { type: :numeric }
         },
-        formatter: formatter
+        formatter:
       )
       second = described_class.new(
         parts: {
           prefix: { type: :static, value: 'v' },
           major: { type: :numeric }
         },
-        formatter: formatter
+        formatter:
       )
 
       expect(first).not_to(eql(second))
@@ -941,10 +941,10 @@ describe Shivers::VersionDefinition do
       }
 
       first = described_class.new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
       second = Class.new(described_class).new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
 
       expect(first).not_to(eql(second))
@@ -959,10 +959,10 @@ describe Shivers::VersionDefinition do
       }
 
       first = described_class.new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
       second = described_class.new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
 
       expect(first.hash).to(eq(second.hash))
@@ -975,11 +975,11 @@ describe Shivers::VersionDefinition do
       }
 
       first = described_class.new(
-        parts: parts,
+        parts:,
         formatter: ->(v) { [v.optionally(&:prefix), v.major] }
       )
       second = described_class.new(
-        parts: parts,
+        parts:,
         formatter: ->(v) { [v.prefix, v.major] }
       )
 
@@ -993,14 +993,14 @@ describe Shivers::VersionDefinition do
           prefix: { type: :static, value: 'V' },
           major: { type: :numeric }
         },
-        formatter: formatter
+        formatter:
       )
       second = described_class.new(
         parts: {
           prefix: { type: :static, value: 'v' },
           major: { type: :numeric }
         },
-        formatter: formatter
+        formatter:
       )
 
       expect(first.hash).not_to(eq(second.hash))
@@ -1014,10 +1014,10 @@ describe Shivers::VersionDefinition do
       }
 
       first = described_class.new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
       second = Class.new(described_class).new(
-        parts: parts, formatter: formatter
+        parts:, formatter:
       )
 
       expect(first.hash).not_to(eq(second.hash))

@@ -11,16 +11,16 @@ module Shivers
         @delegate = MatcherVisitor.new(parts)
       end
 
-      def optionally(&block)
-        @delegate.optionally(&block)
+      def optionally(&)
+        @delegate.optionally(&)
       end
 
-      def recursively(name, &block)
-        @delegate.recursively(name, &block)
+      def recursively(name, &)
+        @delegate.recursively(name, &)
       end
 
-      def method_missing(symbol, *args, &block)
-        @delegate.send(symbol, *args, &block)
+      def method_missing(symbol, ...)
+        @delegate.send(symbol, ...)
       end
 
       def respond_to_missing?(symbol, include_private = false)
