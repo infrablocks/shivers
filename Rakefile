@@ -137,6 +137,7 @@ RakeGithub.define_repository_tasks(
   if github_token.empty?
     raise 'No GitHub token available: set GITHUB_TOKEN or run `gh auth login`'
   end
+
   t.access_token = github_token
 
   # Actions store only: dependabot runs never reach the passphrase — the
